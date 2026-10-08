@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Truck Break-Even Calculator</title>
+  <style>
+    :root {
+      --primary: #e65100;
+      --primary-hover: #bf360c;
+      --primary-light: #fff3e0;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-focus: #f97316;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --error-text: #991b1b;
+      --success-accent: #0f766e;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 24px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--primary-light);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .tagline {
+      font-size: 1.02rem;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+      padding: 28px 24px;
+      margin-bottom: 20px;
+    }
+
+    /* Form & Input Groups */
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (min-width: 580px) {
+      .input-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-prefix,
+    .input-suffix {
+      position: absolute;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      pointer-events: none;
+    }
+
+    .input-prefix {
+      left: 14px;
+    }
+
+    .input-suffix {
+      right: 14px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      height: 48px;
+      font-size: 1.05rem;
+      padding: 8px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background-color: #fff;
+      color: var(--text-main);
+      font-weight: 600;
+      transition: all 0.15s ease-in-out;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .has-prefix input {
+      padding-left: 30px;
+    }
+
+    .has-suffix input {
+      padding-right: 56px;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
+    }
+
+    /* Actions */
+    .button-row {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      align-items: center;
+      padding-top: 4px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 42px;
+      padding: 0 18px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-reset {
+      background: #f1f5f9;
+      color: #475569;
+      border-color: #cbd5e1;
+    }
+
+    .btn-reset:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* Alert / Error Messages */
+    .alert {
+      display: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      margin-bottom: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .alert-error {
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+    }
+
+    .alert-error strong {
+      display: block;
+      margin-bottom: 2px;
+      font-weight: 700;
+    }
+
+    /* Results Display */
+    .results-container {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    /* Hero Meals-per-day Card */
+    .hero-metric {
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      border: 2px solid #fed7aa;
+      border-radius: 18px;
+      padding: 24px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-title {
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #c2410c;
+      margin-bottom: 8px;
+    }
+
+    .hero-value {
+      font-size: 4rem;
+      line-height: 1;
+      font-weight: 900;
+      color: #9a3412;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .hero-unit {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #c2410c;
+    }
+
+    .hero-subtitle {
+      font-size: 0.88rem;
+      color: #7c2d12;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    /* Secondary Metric Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 480px) {
+      .metric-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .metric-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .metric-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Prompt / Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    .empty-text {
+      font-size: 0.95rem;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="badge">🚚 Food Truck Financials</div>
+      <h1>Food Truck Break-Even Calculator</h1>
+      <p class="tagline">Find out exactly how many meals you need to sell each day to cover your costs and keep your food truck profitable.</p>
+    </header>
+
+    <!-- Calculator Card -->
+    <main class="card">
+      <form id="calc-form" onsubmit="event.preventDefault(); calculate();">
+        <div class="input-grid">
+          <!-- Monthly Fixed Costs -->
+          <div class="form-group">
+            <label for="fixed-costs">Monthly Fixed Costs</label>
+            <div class="input-wrapper has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="fixed-costs" step="0.01" min="0" placeholder="3200.00" required>
+            </div>
+            <span class="hint">Truck loan, insurance, parking, permits &amp; commissary</span>
+          </div>
+
+          <!-- Cost to Make One Meal -->
+          <div class="form-group">
+            <label for="meal-cost">Cost to Make One Meal</label>
+            <div class="input-wrapper has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="meal-cost" step="0.01" min="0" placeholder="4.50" required>
+            </div>
+            <span class="hint">Ingredients, packaging, sauces &amp; utensils</span>
+          </div>
+
+          <!-- Selling Price Per Meal -->
+          <div class="form-group">
+            <label for="selling-price">Selling Price per Meal</label>
+            <div class="input-wrapper has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="selling-price" step="0.01" min="0" placeholder="13.00" required>
+            </div>
+            <span class="hint">Average price a customer pays for an entrée</span>
+          </div>
+
+          <!-- Operating Days Per Month -->
+          <div class="form-group">
+            <label for="operating-days">Operating Days per Month</label>
+            <div class="input-wrapper has-suffix">
+              <input type="number" id="operating-days" step="1" min="1" max="31" placeholder="20" required>
+              <span class="input-suffix">days</span>
+            </div>
+            <span class="hint">How many days your truck is open for business</span>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="button" id="reset-btn" class="btn btn-reset">
+            ↺ Reset
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Error / Alert Banner -->
+    <div id="error-alert" class="alert alert-error" role="alert">
+      <strong id="error-title">Check your numbers:</strong>
+      <span id="error-message"></span>
+    </div>
+
+    <!-- Empty Guidance State (Shown before input) -->
+    <div id="empty-state" class="card empty-state">
+      <div class="empty-icon">📊</div>
+      <p class="empty-text">Enter your food truck costs and menu pricing above to see your daily target.</p>
+    </div>
+
+    <!-- Results Display -->
+    <section id="results" class="results-container">
+      <!-- Large Hero Metric for Daily Target -->
+      <div class="hero-metric">
+        <div class="hero-title">Daily Break-Even Target</div>
+        <div class="hero-value" id="daily-meals">0</div>
+        <div class="hero-unit">meals per day</div>
+        <div class="hero-subtitle" id="daily-context">Sell this many meals on every operating day to cover all costs.</div>
+      </div>
+
+      <!-- Secondary Metrics -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Profit per Meal</div>
+          <div class="metric-value" id="profit-per-meal">$0.00</div>
+          <div class="metric-note" id="profit-margin-note">Contribution margin per item</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Monthly Target</div>
+          <div class="metric-value" id="monthly-meals">0</div>
+          <div class="metric-note" id="monthly-revenue-note">Total meals needed this month</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>Break-even means total revenue equals total expenses (fixed + variable). Every meal sold beyond this target is pure profit.</p>
+    </footer>
+  </div>
+
+  <script>
+    // DOM Elements
+    const fixedCostsInput = document.getElementById('fixed-costs');
+    const mealCostInput = document.getElementById('meal-cost');
+    const sellingPriceInput = document.getElementById('selling-price');
+    const operatingDaysInput = document.getElementById('operating-days');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const errorAlert = document.getElementById('error-alert');
+    const errorTitle = document.getElementById('error-title');
+    const errorMessage = document.getElementById('error-message');
+
+    const emptyState = document.getElementById('empty-state');
+    const resultsContainer = document.getElementById('results');
+
+    const dailyMealsEl = document.getElementById('daily-meals');
+    const dailyContextEl = document.getElementById('daily-context');
+    const profitPerMealEl = document.getElementById('profit-per-meal');
+    const profitMarginNoteEl = document.getElementById('profit-margin-note');
+    const monthlyMealsEl = document.getElementById('monthly-meals');
+    const monthlyRevenueNoteEl = document.getElementById('monthly-revenue-note');
+
+    const allInputs = [fixedCostsInput, mealCostInput, sellingPriceInput, operatingDaysInput];
+
+    function formatCurrency(val) {
+      return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showError(title, message) {
+      errorTitle.textContent = title;
+      errorMessage.textContent = message;
+      errorAlert.style.display = 'block';
+      resultsContainer.style.display = 'none';
+      emptyState.style.display = 'none';
+    }
+
+    function hideError() {
+      errorAlert.style.display = 'none';
+    }
+
+    function calculate() {
+      hideError();
+
+      const rawFixed = fixedCostsInput.value.trim();
+      const rawCost = mealCostInput.value.trim();
+      const rawPrice = sellingPriceInput.value.trim();
+      const rawDays = operatingDaysInput.value.trim();
+
+      // Check if all fields have been entered
+      if (rawFixed === '' || rawCost === '' || rawPrice === '' || rawDays === '') {
+        resultsContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      const fixedCosts = parseFloat(rawFixed);
+      const mealCost = parseFloat(rawCost);
+      const sellingPrice = parseFloat(rawPrice);
+      const operatingDays = parseFloat(rawDays);
+
+      // Validation 1: Negative numbers
+      if (fixedCosts < 0 || mealCost < 0 || sellingPrice < 0) {
+        showError('Negative values detected', 'Costs and prices cannot be negative. Please enter positive amounts.');
+        return;
+      }
+
+      // Validation 2: Operating days range
+      if (isNaN(operatingDays) || operatingDays <= 0 || operatingDays > 31 || !Number.isInteger(operatingDays)) {
+        showError('Invalid operating days', 'Please enter a whole number of operating days between 1 and 31.');
+        return;
+      }
+
+      // Validation 3: Profitability check (Selling price vs Cost)
+      const profitPerMeal = sellingPrice - mealCost;
+      if (profitPerMeal <= 0) {
+        if (profitPerMeal === 0) {
+          showError(
+            'No profit per meal',
+            `Your selling price (${formatCurrency(sellingPrice)}) equals your food cost (${formatCurrency(mealCost)}). You make $0.00 on each meal, so you can never cover your monthly fixed costs!`
+          );
+        } else {
+          const lossPerMeal = Math.abs(profitPerMeal);
+          showError(
+            'Losing money on each meal',
+            `Your selling price (${formatCurrency(sellingPrice)}) is less than the meal cost (${formatCurrency(mealCost)}). You are losing ${formatCurrency(lossPerMeal)} on every order sold!`
+          );
+        }
+        return;
+      }
+
+      // Calculations
+      // Break-even monthly meals: fixed costs divided by contribution margin
+      // Rounded up to whole meals because partial meals cannot be sold
+      const monthlyMealsExact = fixedCosts / profitPerMeal;
+      const monthlyMeals = Math.ceil(monthlyMealsExact);
+
+      // Daily break-even meals: monthly meals divided by days open
+      const dailyMealsExact = monthlyMeals / operatingDays;
+      const dailyMeals = Math.ceil(dailyMealsExact);
+
+      // Additional insights
+      const marginPercent = ((profitPerMeal / sellingPrice) * 100).toFixed(0);
+      const dailyRevenue = dailyMeals * sellingPrice;
+
+      // Update UI
+      dailyMealsEl.textContent = dailyMeals.toLocaleString('en-US');
+      dailyContextEl.textContent = `Target: ${dailyMeals} meals across ${operatingDays} open days (approx. ${formatCurrency(dailyRevenue)} daily gross revenue).`;
+
+      profitPerMealEl.textContent = formatCurrency(profitPerMeal);
+      profitMarginNoteEl.textContent = `${marginPercent}% profit margin per meal sold`;
+
+      monthlyMealsEl.textContent = `${monthlyMeals.toLocaleString('en-US')} meals`;
+      monthlyRevenueNoteEl.textContent = `Covers ${formatCurrency(fixedCosts)} in fixed overhead`;
+
+      // Show results, hide empty state
+      emptyState.style.display = 'none';
+      resultsContainer.style.display = 'block';
+    }
+
+    function resetForm() {
+      fixedCostsInput.value = '';
+      mealCostInput.value = '';
+      sellingPriceInput.value = '';
+      operatingDaysInput.value = '';
+
+      hideError();
+      resultsContainer.style.display = 'none';
+      emptyState.style.display = 'block';
+      fixedCostsInput.focus();
+    }
+
+    // Attach listeners for instant real-time calculation
+    allInputs.forEach(input => {
+      input.addEventListener('input', calculate);
+    });
+
+    resetBtn.addEventListener('click', resetForm);
+  </script>
+</body>
+</html>
