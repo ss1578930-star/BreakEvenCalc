@@ -289,6 +289,29 @@
       font-weight: 500;
     }
 
+    .target-status {
+      margin-top: 14px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      line-height: 1.4;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .status-manageable {
+      background-color: #dcfce7;
+      border: 1.5px solid #86efac;
+      color: #14532d;
+    }
+
+    .status-high {
+      background-color: #fee2e2;
+      border: 1.5px solid #fca5a5;
+      color: #991b1b;
+    }
+
     /* Secondary Metric Grid */
     .metric-grid {
       display: grid;
@@ -449,6 +472,7 @@
         <div class="hero-value" id="daily-meals">0</div>
         <div class="hero-unit">meals per day</div>
         <div class="hero-subtitle" id="daily-context">Sell this many meals on every operating day to cover all costs.</div>
+        <div id="target-status" class="target-status"></div>
       </div>
 
       <!-- Secondary Metrics -->
@@ -494,6 +518,7 @@
     const profitMarginNoteEl = document.getElementById('profit-margin-note');
     const monthlyMealsEl = document.getElementById('monthly-meals');
     const monthlyRevenueNoteEl = document.getElementById('monthly-revenue-note');
+    const targetStatusEl = document.getElementById('target-status');
 
     const allInputs = [fixedCostsInput, mealCostInput, sellingPriceInput, operatingDaysInput];
 
@@ -587,6 +612,15 @@
       monthlyMealsEl.textContent = `${monthlyMeals.toLocaleString('en-US')} meals`;
       monthlyRevenueNoteEl.textContent = `Covers ${formatCurrency(fixedCosts)} in fixed overhead`;
 
+      // Color-coded break-even status message
+      if (dailyMeals <= 25) {
+        targetStatusEl.className = 'target-status status-manageable';
+        targetStatusEl.textContent = 'Your daily sales target looks manageable.';
+      } else {
+        targetStatusEl.className = 'target-status status-high';
+        targetStatusEl.textContent = 'Your daily sales target is high. Consider reducing costs or increasing your selling price.';
+      }
+
       // Show results, hide empty state
       emptyState.style.display = 'none';
       resultsContainer.style.display = 'block';
@@ -597,6 +631,9 @@
       mealCostInput.value = '';
       sellingPriceInput.value = '';
       operatingDaysInput.value = '';
+
+      targetStatusEl.textContent = '';
+      targetStatusEl.className = 'target-status';
 
       hideError();
       resultsContainer.style.display = 'none';
